@@ -12,6 +12,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "app/components/ProfilePage.js",
+    "app/components/SignupPage.js",
+    "app/(tabs)/index.js",
+    "app/AnnouncementPageUser.js/api.js",
+    "nativewind-env.d.ts"
   ]
 }
