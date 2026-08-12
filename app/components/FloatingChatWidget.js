@@ -7,7 +7,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, Modal, Animated, Easing,
-  Platform, StatusBar, SafeAreaView,
+  Platform, StatusBar, SafeAreaView, KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -98,63 +98,67 @@ const FloatingChatWidget = () => {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* ── Compact 60% Height Floating AI Chat Modal Card ────────── */}
+      {/* ── Dynamic Keyboard-Avoiding Floating AI Chat Modal ────────── */}
       <Modal
         visible={modalVisible}
         transparent
         animationType="slide"
         onRequestClose={handleClose}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(15, 23, 42, 0.45)',
-          justifyContent: 'flex-end',
-          paddingHorizontal: 10,
-          paddingBottom: Math.max(insets.bottom, 10) + 56,
-        }}>
-          {/* Backdrop Touch Handler to dismiss */}
-          <TouchableOpacity
-            style={{ flex: 1 }}
-            activeOpacity={1}
-            onPress={handleClose}
-          />
-
-          {/* Floating Popup Card */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+          style={{ flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.45)' }}
+        >
           <View style={{
-            height: '60%',
-            maxHeight: 520,
-            backgroundColor: '#0f172a',
-            borderRadius: 24,
-            overflow: 'hidden',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.35,
-            shadowRadius: 20,
-            elevation: 24,
-            borderWidth: 1,
-            borderColor: '#1e293b',
+            flex: 1,
+            justifyContent: 'flex-end',
+            paddingHorizontal: 10,
+            paddingBottom: Math.max(insets.bottom, 10) + 56,
           }}>
-            {/* Top Drag Handle Bar */}
-            <View style={{
-              height: 14,
-              backgroundColor: '#0f172a',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <View style={{
-                width: 36,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: '#334155',
-              }} />
-            </View>
+            {/* Backdrop Touch Handler to dismiss */}
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              activeOpacity={1}
+              onPress={handleClose}
+            />
 
-            {/* AI Chat Body */}
-            <View style={{ flex: 1 }}>
-              <AIChatScreen onClose={handleClose} />
+            {/* Floating Popup Card */}
+            <View style={{
+              height: '65%',
+              maxHeight: 540,
+              backgroundColor: '#0f172a',
+              borderRadius: 24,
+              overflow: 'hidden',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.35,
+              shadowRadius: 20,
+              elevation: 24,
+              borderWidth: 1,
+              borderColor: '#1e293b',
+            }}>
+              {/* Top Drag Handle Bar */}
+              <View style={{
+                height: 14,
+                backgroundColor: '#0f172a',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <View style={{
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: '#334155',
+                }} />
+              </View>
+
+              {/* AI Chat Body */}
+              <View style={{ flex: 1 }}>
+                <AIChatScreen onClose={handleClose} />
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
