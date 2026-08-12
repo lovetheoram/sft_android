@@ -63,7 +63,17 @@ const ExpensePage = () => {
   const fetchCategories = async (header) => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/categories/`, header);
-      setCategories(res.data);
+      const catList = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      const seen = new Set();
+      const uniqueCats = [];
+      for (const c of catList) {
+        const key = (c.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueCats.push(c);
+        }
+      }
+      setCategories(uniqueCats);
     } catch (err) {
       console.log("Failed to fetch categories", err);
     }
@@ -72,7 +82,8 @@ const ExpensePage = () => {
   const fetchExpenses = async (header) => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/expense/`, header);
-      setExpenses(res.data);
+      const expList = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      setExpenses(expList);
     } catch (err) {
       console.log("Failed to fetch expenses", err);
     }
