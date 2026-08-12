@@ -1,115 +1,130 @@
-import React, { useState } from "react";
+/**
+ * LoginPage — Sky Blue Design + AuthContext Login (React Native)
+ * Fixes critical token key bug: uses 'access_token' (snake_case) via AuthContext
+ */
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  Pressable,
-} from "react-native";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { API_BASE_URL } from "../api";
-import { API_BASE_URL } from "../user_utils/api";
-const LoginPage = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
+  View, Text, TextInput, TouchableOpacity, ScrollView,
+  ActivityIndicator, KeyboardAvoidingView, Platform,
+} from 'react-native';
+import { useAuth } from '../user_utils/AuthContext';
+
+const LoginPage = ({ onLoginSuccess, onGoSignup }) => {
+  const { login } = useAuth();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const handleLogin = async () => {
-    setError("");
+    if (!username.trim() || !password.trim()) {
+      setError('Please enter both username and password.');
+      return;
+    }
+    setError('');
+    setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/token/`, {
-        username,
-        password,
-      });
-      const { access, refresh } = response.data;
-      await AsyncStorage.setItem("accessToken", access);
-      await AsyncStorage.setItem("refreshToken", refresh);
-      setShowSuccess(true);
-    } catch (err) {
-      setError("❌ Invalid username or password");
+      await login({ username: username.trim(), password });
+      onLoginSuccess?.();
+    } catch {
+      setError('Invalid username or password. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    onLoginSuccess && onLoginSuccess();
-  };
-
   return (
-    <View className="flex-1 justify-center items-center bg-gradient-to-br from-purple-500 to-indigo-600 px-4">
-      <View className="bg-white rounded-2xl shadow-lg p-6 w-11/12 max-w-md">
-        <Text className="text-3xl font-bold text-center text-indigo-700 mb-6">
-          🔐 Welcome Back
-        </Text>
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView
+        className="flex-1 bg-slate-50"
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+        keyboardShouldPersistTaps="handled">
 
-        {error !== "" && (
-          <Text className="text-red-600 text-center mb-4">{error}</Text>
-        )}
+        {/* Logo + Brand */}
+        <View className="items-center mb-8">
+          <View className="w-16 h-16 rounded-2xl items-center justify-center mb-4"
+            style={{ backgroundColor: '#0284c7', shadowColor: '#0284c7', shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}>
+            <Text className="text-white text-2xl font-black">SF</Text>
+          </View>
+          <Text className="text-2xl font-extrabold text-slate-900 tracking-tight">Society Finance</Text>
+          <Text className="text-slate-500 text-sm mt-0.5">Sign in to your account</Text>
+        </View>
 
-        <View className="space-y-4">
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
-              Username
-            </Text>
+        {/* Card */}
+        <View className="bg-white rounded-2xl border border-slate-200 p-6"
+          style={{ shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 16, elevation: 4 }}>
+
+          {/* Error banner */}
+          {error !== '' && (
+            <View className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 mb-4">
+              <Text className="text-rose-700 font-semibold text-sm text-center">{error}</Text>
+            </View>
+          )}
+
+          {/* Username */}
+          <View className="mb-4">
+            <Text className="text-xs font-bold text-slate-700 mb-1.5">Username</Text>
             <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-2 text-black"
+              className="border border-slate-300 rounded-xl px-4 py-3 text-slate-900 bg-slate-50"
               placeholder="your_username"
+              placeholderTextColor="#94a3b8"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
+              autoCorrect={false}
+              style={{ fontSize: 15 }}
             />
           </View>
 
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-1">
-              Password
-            </Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-2 text-black"
-              placeholder="••••••••"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+          {/* Password */}
+          <View className="mb-6">
+            <Text className="text-xs font-bold text-slate-700 mb-1.5">Password</Text>
+            <View className="border border-slate-300 rounded-xl bg-slate-50 flex-row items-center pr-3">
+              <TextInput
+                className="flex-1 px-4 py-3 text-slate-900"
+                placeholder="••••••••"
+                placeholderTextColor="#94a3b8"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPass}
+                style={{ fontSize: 15 }}
+              />
+              <TouchableOpacity onPress={() => setShowPass(!showPass)}>
+                <Text className="text-slate-400 text-sm">{showPass ? '🙈' : '👁️'}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
+          {/* Login Button */}
           <TouchableOpacity
             onPress={handleLogin}
-            className="bg-indigo-600 py-2 rounded-lg"
-          >
-            <Text className="text-white text-center font-semibold">🚀 Login</Text>
+            disabled={loading}
+            className="rounded-xl py-3.5 items-center"
+            style={{ backgroundColor: loading ? '#7dd3fc' : '#0284c7', opacity: loading ? 0.8 : 1 }}>
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text className="text-white font-bold text-base">🚀 Sign In</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Signup link */}
+          <TouchableOpacity onPress={onGoSignup} className="mt-4 items-center">
+            <Text className="text-sm text-slate-500">
+              Don't have an account?{' '}
+              <Text style={{ color: '#0284c7', fontWeight: '700' }}>Sign up</Text>
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <Text className="mt-6 text-sm text-center text-gray-500">
-          Don't have an account?{" "}
-          <Text className="text-indigo-600 font-medium underline">Sign up</Text>
+        <Text className="text-center text-slate-400 mt-6" style={{ fontSize: 11 }}>
+          Society Finance Tracker v1.4 • Secure Login
         </Text>
-      </View>
-
-      {/* ✅ Success Modal */}
-      <Modal transparent visible={showSuccess} animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="bg-white rounded-xl p-6 w-11/12 max-w-sm items-center">
-            <Text className="text-2xl font-bold text-green-600 mb-2">
-              🎉 Login Successful!
-            </Text>
-            <Text className="mb-4 text-gray-700">
-              Welcome, <Text className="font-semibold">{username}</Text>!
-            </Text>
-            <Pressable
-              onPress={handleSuccessClose}
-              className="bg-green-600 px-6 py-2 rounded-lg"
-            >
-              <Text className="text-white font-medium">Go to Home</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
