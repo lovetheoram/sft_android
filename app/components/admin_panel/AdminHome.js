@@ -14,7 +14,7 @@ const AdminPanel = () => {
   useEffect(() => {
     const getToken = async () => {
       try {
-        const token = await AsyncStorage.getItem("accessToken");
+        const token = await AsyncStorage.getItem("access_token");
         if (token) {
           setAuthHeader({ headers: { Authorization: `Bearer ${token}` } });
         }

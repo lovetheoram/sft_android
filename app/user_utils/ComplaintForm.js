@@ -1,162 +1,134 @@
-import React, { useEffect, useState } from "react";
+/**
+ * ComplaintForm — Resident Complaint Submission (React Native)
+ * - Subject, description, recipient (admin) picker
+ * - Matches web CreateComplaintModal
+ */
+import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import axios from "axios";
-import { API_BASE_URL } from "./api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+  View, Text, TextInput, TouchableOpacity, ScrollView,
+  ActivityIndicator, Alert, SafeAreaView,
+} from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import societyService from './services/societyService';
+import apiClient from './api';
 
-const ComplaintForm = () => {
-  const [user, setUser] = useState(null);
+const ComplaintForm = ({ onClose }) => {
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+  const [recipientId, setRecipientId] = useState('');
   const [recipients, setRecipients] = useState([]);
-  const [selectedRecipient, setSelectedRecipient] = useState("");
-  const [subject, setSubject] = useState("");
-  const [description, setDescription] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  const fetchUser = async () => {
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
-      const res = await axios.get(`${API_BASE_URL}/api/currentUser/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(res.data);
-    } catch {
-      setFeedback("❌ Failed to load user info.");
-    }
-  };
-
-  const fetchAdmins = async () => {
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token || !user) return;
-
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const [buildingAdminRes, superAdminsRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/buildingadmin/`, { headers }),
-        axios.get(`${API_BASE_URL}/api/superadmin/`, { headers }),
-      ]);
-
-      const buildingAdmin = buildingAdminRes?.data ? [buildingAdminRes.data] : [];
-      const superAdmins = superAdminsRes?.data ? [superAdminsRes.data] : [];
-
-      setRecipients([...buildingAdmin, ...superAdmins]);
-    } catch {
-      setFeedback("❌ Failed to load admin recipients.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingRecipients, setLoadingRecipients] = useState(true);
 
   useEffect(() => {
-    fetchUser();
+    const fetchRecipients = async () => {
+      try {
+        const { data } = await apiClient.get('/users/', { params: { role: 'admin' } });
+        const list = Array.isArray(data) ? data : (data?.results || []);
+        setRecipients(list);
+        if (list.length > 0) setRecipientId(list[0].id);
+      } catch { /* silent */ }
+      finally { setLoadingRecipients(false); }
+    };
+    fetchRecipients();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      fetchAdmins();
-    }
-  }, [user]);
-
   const handleSubmit = async () => {
-    if (!selectedRecipient || !subject.trim() || !description.trim()) {
-      setFeedback("❌ All fields are required.");
-      return;
-    }
-
+    if (!subject.trim()) { Alert.alert('Required', 'Please enter a subject.'); return; }
+    if (!description.trim()) { Alert.alert('Required', 'Please describe the issue.'); return; }
+    setSubmitting(true);
     try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
-
-      const headers = { Authorization: `Bearer ${token}` };
-
-      await axios.post(
-        `${API_BASE_URL}/api/complaints/`,
-        {
-          recipient: selectedRecipient,
-          subject,
-          description,
-        },
-        { headers }
-      );
-
-      setSelectedRecipient("");
-      setSubject("");
-      setDescription("");
-      setFeedback("✅ Complaint submitted successfully.");
+      await societyService.createComplaint({
+        subject: subject.trim(),
+        description: description.trim(),
+        recipient: recipientId || null,
+      });
+      Alert.alert('Success', 'Your complaint has been submitted! Admin will review it shortly.', [
+        { text: 'OK', onPress: onClose },
+      ]);
     } catch {
-      setFeedback("❌ Failed to submit complaint.");
+      Alert.alert('Error', 'Failed to submit complaint. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <ScrollView className="p-4 bg-white h-full">
-      <Text className="text-xl font-bold mb-4 text-center">📝 Submit a Complaint</Text>
+    <SafeAreaView className="flex-1 bg-slate-50">
+      <View className="bg-white border-b border-slate-200 px-4 py-3 flex-row items-center justify-between">
+        <Text className="text-lg font-bold text-slate-900">⚠️ File a Complaint</Text>
+        <TouchableOpacity onPress={onClose} className="p-2">
+          <Text className="text-slate-500 font-bold text-xl">✕</Text>
+        </TouchableOpacity>
+      </View>
 
-      {loading ? (
-        <View className="mt-10 items-center justify-center">
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text className="text-gray-600 mt-2">Loading user and recipients...</Text>
-        </View>
-      ) : (
-        <>
-          <Text className="font-medium mb-1">Select Recipient</Text>
-          <View className="border rounded mb-4 overflow-hidden">
-            <Picker
-              selectedValue={selectedRecipient}
-              onValueChange={(value) => setSelectedRecipient(value)}
-            >
-              <Picker.Item label="-- Select Admin --" value="" />
-              {recipients.map((r) => (
-                <Picker.Item
-                  key={r.id}
-                  label={`${r.first_name || r.username} (${r.flat ? "Building Admin" : "Super Admin"})`}
-                  value={r.id}
-                />
-              ))}
-            </Picker>
-          </View>
+      <ScrollView className="flex-1 p-4" keyboardShouldPersistTaps="handled">
+        <View className="bg-white rounded-2xl border border-slate-200 p-5"
+          style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
+          <Text className="text-slate-500 text-xs mb-4 leading-relaxed">
+            Lodge a maintenance request, raise a concern, or report an issue to your building admin.
+          </Text>
 
-          <Text className="font-medium mb-1">Subject</Text>
+          {/* Subject */}
+          <Text className="text-xs font-bold text-slate-700 mb-1">Subject *</Text>
           <TextInput
-            className="border px-3 py-2 rounded mb-4"
+            className="border border-slate-300 rounded-xl px-4 py-3 bg-slate-50 text-slate-900 mb-3"
+            placeholder="e.g. Water leakage in corridor..."
+            placeholderTextColor="#94a3b8"
             value={subject}
             onChangeText={setSubject}
-            placeholder="Enter subject"
+            style={{ fontSize: 14 }}
           />
 
-          <Text className="font-medium mb-1">Description</Text>
+          {/* Description */}
+          <Text className="text-xs font-bold text-slate-700 mb-1">Detailed Description *</Text>
           <TextInput
-            className="border px-3 py-2 rounded mb-4"
-            multiline
-            numberOfLines={4}
+            className="border border-slate-300 rounded-xl px-4 py-3 bg-slate-50 text-slate-900 mb-3"
+            placeholder="Describe the issue in detail — location, when it started, severity..."
+            placeholderTextColor="#94a3b8"
             value={description}
             onChangeText={setDescription}
-            placeholder="Describe your issue..."
+            multiline
+            numberOfLines={5}
+            style={{ fontSize: 14, minHeight: 120, textAlignVertical: 'top' }}
           />
 
-          <TouchableOpacity
-            className="bg-blue-600 rounded py-3"
-            onPress={handleSubmit}
-          >
-            <Text className="text-white text-center font-semibold">Submit Complaint</Text>
-          </TouchableOpacity>
-
-          {feedback !== "" && (
-            <Text className="text-center text-blue-700 mt-4">{feedback}</Text>
+          {/* Recipient */}
+          <Text className="text-xs font-bold text-slate-700 mb-1">Send To (Admin)</Text>
+          {loadingRecipients ? (
+            <ActivityIndicator color="#0284c7" />
+          ) : (
+            <View className="border border-slate-300 rounded-xl bg-slate-50 overflow-hidden mb-5" style={{ height: 48 }}>
+              <Picker
+                selectedValue={recipientId}
+                onValueChange={setRecipientId}
+                style={{ height: 48 }}>
+                <Picker.Item label="— Select admin recipient —" value="" />
+                {recipients.map((r) => (
+                  <Picker.Item
+                    key={r.id}
+                    label={`${r.first_name || ''} ${r.last_name || ''} (@${r.username})`}
+                    value={r.id}
+                  />
+                ))}
+              </Picker>
+            </View>
           )}
-        </>
-      )}
-    </ScrollView>
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={submitting}
+            className="py-3.5 rounded-xl items-center"
+            style={{ backgroundColor: submitting ? '#7dd3fc' : '#f59e0b' }}>
+            {submitting
+              ? <ActivityIndicator color="#fff" />
+              : <Text className="text-white font-bold text-base">Submit Complaint →</Text>
+            }
+          </TouchableOpacity>
+        </View>
+        <View className="h-8" />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

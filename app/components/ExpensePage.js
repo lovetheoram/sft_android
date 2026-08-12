@@ -30,7 +30,7 @@ const ExpensePage = () => {
   useEffect(() => {
     const getTokenAndFetch = async () => {
       try {
-        const token = await AsyncStorage.getItem("accessToken");
+        const token = await AsyncStorage.getItem("access_token");
         if (!token) throw new Error("No token found");
 
         const header = { headers: { Authorization: `Bearer ${token}` } };

@@ -9,7 +9,7 @@ const AnnouncementPageUser = () => {
   const [feedback, setFeedback] = useState("");
 
   // Replace this with secure token handling (e.g. SecureStore or context)
-  const getToken = async () => await AsyncStorage.getItem("accessToken");
+  const getToken = async () => await AsyncStorage.getItem("access_token");
   
 
 
