@@ -1,10 +1,8 @@
 /**
- * Root App Shell — Industry-standard Android/iOS navigation
- * - Persistent Bottom Tab Bar (Android Material Design standard)
- * - Header with brand, bell notification badge, avatar popover
- * - Role-based tab visibility
- * - Haptic feedback on tab press (expo-haptics)
- * - Ionicons for tab icons
+ * Root App Shell — Industry-standard Android/iOS layout
+ * - Persistent Bottom Tab Bar with generous safe area padding (insets.bottom)
+ * - Clean Header with brand logo, bell notification badge, avatar popover
+ * - Floating AI Chatbot Widget (bottom-right anchored above tab bar)
  */
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -27,42 +25,14 @@ import ExpensePage from '../components/ExpensePage';
 import FinancialSummary from '../components/FinancialSummary';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import CommunityHubPage from '../components/admin_panel/CommunityHubPage';
-import AIChatScreen from '../components/AIChatScreen';
+import FloatingChatWidget from '../components/FloatingChatWidget';
 import HomePage from '../components/HomePage';
 
-// ─── Tab definitions by role ─────────────────────────────────────────────────
+// ─── Bottom Tab Bar with Safe Area Bottom Inset Padding ─────────────────────
 
-const SUPER_ADMIN_TABS = [
-  { id: 'user-home',       label: 'Home',       icon: 'home',           iconActive: 'home' },
-  { id: 'admin-dashboard', label: 'Admin',       icon: 'settings-outline', iconActive: 'settings' },
-  { id: 'notifications',   label: 'Community',   icon: 'notifications-outline', iconActive: 'notifications' },
-  { id: 'ai-chat',         label: 'AI Chat',     icon: 'chatbubble-ellipses-outline', iconActive: 'chatbubble-ellipses' },
-  { id: 'profile',         label: 'Profile',     icon: 'person-outline', iconActive: 'person' },
-];
-
-const BUILDING_ADMIN_TABS = [
-  { id: 'user-home',       label: 'Home',       icon: 'home-outline',   iconActive: 'home' },
-  { id: 'dashboard',       label: 'Finance',     icon: 'bar-chart-outline', iconActive: 'bar-chart' },
-  { id: 'income',          label: 'Payments',    icon: 'card-outline',   iconActive: 'card' },
-  { id: 'expenses',        label: 'Expenses',    icon: 'receipt-outline', iconActive: 'receipt' },
-  { id: 'admin-dashboard', label: 'Admin',       icon: 'settings-outline', iconActive: 'settings' },
-  { id: 'notifications',   label: 'Community',   icon: 'notifications-outline', iconActive: 'notifications' },
-  { id: 'ai-chat',         label: 'AI Chat',     icon: 'chatbubble-ellipses-outline', iconActive: 'chatbubble-ellipses' },
-];
-
-const RESIDENT_TABS = [
-  { id: 'user-home',   label: 'Home',     icon: 'home-outline',       iconActive: 'home' },
-  { id: 'dashboard',   label: 'Finance',  icon: 'bar-chart-outline',  iconActive: 'bar-chart' },
-  { id: 'income',      label: 'Payments', icon: 'card-outline',       iconActive: 'card' },
-  { id: 'notifications', label: 'Community', icon: 'notifications-outline', iconActive: 'notifications' },
-  { id: 'ai-chat',     label: 'AI Chat',  icon: 'chatbubble-ellipses-outline', iconActive: 'chatbubble-ellipses' },
-  { id: 'profile',     label: 'Profile',  icon: 'person-outline',     iconActive: 'person' },
-];
-
-// ─── Bottom Tab Bar ───────────────────────────────────────────────────────────
-
-const BottomTabBar = ({ tabs, activeTab, onTabPress, unreadCount }) => {
+const BottomTabBar = ({ tabs, activeTab, onTabPress }) => {
   const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 12);
 
   return (
     <View style={{
@@ -70,8 +40,8 @@ const BottomTabBar = ({ tabs, activeTab, onTabPress, unreadCount }) => {
       backgroundColor: '#ffffff',
       borderTopWidth: 1,
       borderTopColor: '#e2e8f0',
-      paddingBottom: insets.bottom || 8,
-      paddingTop: 6,
+      paddingBottom: bottomPadding,
+      paddingTop: 8,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: -2 },
       shadowOpacity: 0.06,
@@ -80,7 +50,6 @@ const BottomTabBar = ({ tabs, activeTab, onTabPress, unreadCount }) => {
     }}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
-        const showBadge = tab.id === 'notifications' && unreadCount > 0;
 
         return (
           <Pressable
@@ -95,20 +64,6 @@ const BottomTabBar = ({ tabs, activeTab, onTabPress, unreadCount }) => {
                 size={22}
                 color={isActive ? '#0284c7' : '#94a3b8'}
               />
-              {showBadge && (
-                <View style={{
-                  position: 'absolute', top: -3, right: -6,
-                  backgroundColor: '#f43f5e', borderRadius: 8,
-                  minWidth: 16, height: 16,
-                  alignItems: 'center', justifyContent: 'center',
-                  borderWidth: 1.5, borderColor: '#fff',
-                  paddingHorizontal: 3,
-                }}>
-                  <Text style={{ color: '#fff', fontSize: 9, fontWeight: '900' }}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
-                </View>
-              )}
             </View>
             <Text style={{
               fontSize: 9.5,
@@ -178,11 +133,14 @@ export default function RootIndex() {
     setActiveTab(tabId);
   };
 
-  // Role-based tabs
-  const tabs = !isAuthenticated ? [] :
-    isSuperAdmin ? SUPER_ADMIN_TABS :
-    isBuildingAdmin ? BUILDING_ADMIN_TABS :
-    RESIDENT_TABS;
+  const tabs = !isAuthenticated ? [] : [
+    { id: 'user-home', label: 'Home', icon: 'home-outline', iconActive: 'home' },
+    { id: 'dashboard', label: 'Finance', icon: 'bar-chart-outline', iconActive: 'bar-chart' },
+    { id: 'income', label: 'Payments', icon: 'card-outline', iconActive: 'card' },
+    { id: 'expenses', label: 'Expenses', icon: 'receipt-outline', iconActive: 'receipt' },
+    ...(isSuperAdmin || isBuildingAdmin ? [{ id: 'admin-dashboard', label: 'Admin', icon: 'settings-outline', iconActive: 'settings' }] : []),
+    { id: 'profile', label: 'Profile', icon: 'person-outline', iconActive: 'person' },
+  ];
 
   const renderContent = () => {
     if (!isAuthenticated) {
@@ -200,16 +158,15 @@ export default function RootIndex() {
             onNavigate={(target) => handleTabPress(target === 'community' ? 'notifications' : target)}
           />
         );
-      case 'dashboard':    return <FinancialSummary />;
+      case 'dashboard':       return <FinancialSummary />;
       case 'income':
-      case 'payments':     return <IncomePage />;
-      case 'expenses':     return <ExpensePage />;
+      case 'payments':        return <IncomePage />;
+      case 'expenses':        return <ExpensePage />;
       case 'notifications':
-      case 'community':    return <CommunityHubPage onMarkRead={() => setUnreadCount(0)} />;
+      case 'community':       return <CommunityHubPage onMarkRead={() => setUnreadCount(0)} />;
       case 'admin-dashboard': return <AdminDashboard />;
-      case 'ai-chat':      return <AIChatScreen />;
-      case 'profile':      return <ProfilePage onNavigateBack={() => handleTabPress('user-home')} />;
-      default:             return <UserHomePage onNavigate={handleTabPress} />;
+      case 'profile':         return <ProfilePage onNavigateBack={() => handleTabPress('user-home')} />;
+      default:                return <UserHomePage onNavigate={handleTabPress} />;
     }
   };
 
@@ -261,7 +218,11 @@ export default function RootIndex() {
           paddingHorizontal: 16,
         }}>
           {/* Logo + Brand */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <TouchableOpacity
+            onPress={() => isAuthenticated && handleTabPress('user-home')}
+            activeOpacity={0.8}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+          >
             <View style={{
               width: 34, height: 34, borderRadius: 10,
               backgroundColor: '#0284c7',
@@ -273,11 +234,11 @@ export default function RootIndex() {
               <Text style={{ fontSize: 14, fontWeight: '800', color: '#0f172a', lineHeight: 18 }}>
                 Society Finance
               </Text>
-              <Text style={{ fontSize: 10, color: '#94a3b8', lineHeight: 14 }}>Tracker v1.4</Text>
+              <Text style={{ fontSize: 10, color: '#94a3b8', lineHeight: 14 }}>Tracker App</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
-          {/* Right: Bell + Avatar */}
+          {/* Right: Notification Bell + Avatar */}
           {isAuthenticated ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {/* Notification Bell */}
@@ -334,7 +295,7 @@ export default function RootIndex() {
               </TouchableOpacity>
             </View>
           ) : (
-            <Text style={{ color: '#94a3b8', fontSize: 11 }}>SFT v1.4</Text>
+            <Text style={{ color: '#94a3b8', fontSize: 11 }}>SFT Mobile</Text>
           )}
         </View>
       </View>
@@ -344,17 +305,19 @@ export default function RootIndex() {
         {renderContent()}
       </View>
 
-      {/* ── Bottom Tab Bar ───────────────────────────────────────────── */}
+      {/* ── Floating AI Chatbot Widget (Bottom-Right) ───────────────── */}
+      {isAuthenticated && <FloatingChatWidget />}
+
+      {/* ── Bottom Navigation Bar ────────────────────────────────────── */}
       {isAuthenticated && tabs.length > 0 && (
         <BottomTabBar
           tabs={tabs}
           activeTab={activeTab}
           onTabPress={handleTabPress}
-          unreadCount={unreadCount}
         />
       )}
 
-      {/* ── User Avatar Popover ───────────────────────────────────────── */}
+      {/* ── User Avatar Popover Menu ──────────────────────────────────── */}
       <Modal
         visible={userMenuOpen}
         transparent
@@ -421,21 +384,71 @@ export default function RootIndex() {
             {/* Actions */}
             <View style={{ padding: 6 }}>
               <TouchableOpacity
-                onPress={() => { setUserMenuOpen(false); handleTabPress('profile'); }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 11, borderRadius: 12 }}
+                onPress={() => { setUserMenuOpen(false); handleTabPress('user-home'); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
                 activeOpacity={0.7}
               >
-                <Ionicons name="person-outline" size={18} color="#475569" />
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b' }}>My Profile</Text>
+                <Ionicons name="home-outline" size={16} color="#0284c7" />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Home</Text>
               </TouchableOpacity>
-              <View style={{ height: 1, backgroundColor: '#f1f5f9', marginHorizontal: 12 }} />
+              <TouchableOpacity
+                onPress={() => { setUserMenuOpen(false); handleTabPress('dashboard'); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="bar-chart-outline" size={16} color="#0284c7" />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Finance Reports</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => { setUserMenuOpen(false); handleTabPress('income'); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="card-outline" size={16} color="#0284c7" />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Payments Ledger</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => { setUserMenuOpen(false); handleTabPress('expenses'); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="receipt-outline" size={16} color="#0284c7" />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Expense Log</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => { setUserMenuOpen(false); handleTabPress('notifications'); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="notifications-outline" size={16} color="#0284c7" />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Community & Complaints</Text>
+              </TouchableOpacity>
+              { (isSuperAdmin || isBuildingAdmin) && (
+                <TouchableOpacity
+                  onPress={() => { setUserMenuOpen(false); handleTabPress('admin-dashboard'); }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="settings-outline" size={16} color="#d97706" />
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#d97706' }}>Admin Panel</Text>
+                </TouchableOpacity>
+              )}
+              <View style={{ height: 1, backgroundColor: '#f1f5f9', marginVertical: 4, marginHorizontal: 8 }} />
+              <TouchableOpacity
+                onPress={() => { setUserMenuOpen(false); handleTabPress('profile'); }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="person-outline" size={16} color="#475569" />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>My Profile</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 onPress={async () => { setUserMenuOpen(false); await logout(); }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 11, borderRadius: 12 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
                 activeOpacity={0.7}
               >
-                <Ionicons name="log-out-outline" size={18} color="#e11d48" />
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#e11d48' }}>Sign Out</Text>
+                <Ionicons name="log-out-outline" size={16} color="#e11d48" />
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#e11d48' }}>Sign Out</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
