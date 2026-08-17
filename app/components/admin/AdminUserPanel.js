@@ -10,7 +10,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   ActivityIndicator, Modal, Alert, FlatList,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import CustomSelect from '../common/CustomSelect';
 import apiClient from '../../user_utils/api';
 import financeService from '../../user_utils/services/financeService';
 
@@ -52,10 +52,14 @@ const AdminUserPanel = () => {
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0]);
   const [paySubmitting, setPaySubmitting] = useState(false);
 
+  const [buildings, setBuildings] = useState([]);
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [buildingFilter, setBuildingFilter] = useState('all');
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get('/users/', { params: { limit: 50 } });
+      const { data } = await apiClient.get('/users/', { params: { limit: 100 } });
       const list = Array.isArray(data) ? data : (data?.results || []);
       setUsers(list);
     } catch { Alert.alert('Error', 'Failed to load users.'); }
@@ -69,12 +73,47 @@ const AdminUserPanel = () => {
     } catch { /* silent */ }
   };
 
-  useEffect(() => { fetchUsers(); fetchFlats(); }, []);
+  const fetchBuildings = async () => {
+    try {
+      const { data } = await apiClient.get('/buildings/');
+      setBuildings(Array.isArray(data) ? data : (data?.results || []));
+    } catch { /* silent */ }
+  };
 
-  const filteredUsers = users.filter((u) =>
-    searchQuery.trim() === '' ||
-    `${u.first_name} ${u.last_name} ${u.username} ${u.email}`.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => { fetchUsers(); fetchFlats(); fetchBuildings(); }, []);
+
+  const filteredUsers = users.filter((u) => {
+    // Role Filter
+    if (roleFilter !== 'all') {
+      const isSuperAdmin = u.role === 'admin' && !u.flat;
+      const isBuildingAdmin = u.role === 'admin' && !!u.flat;
+      const isResident = u.role === 'resident';
+
+      if (roleFilter === 'super_admin' && !isSuperAdmin) return false;
+      if (roleFilter === 'building_admin' && !isBuildingAdmin) return false;
+      if (roleFilter === 'resident' && !isResident) return false;
+    }
+
+    // Building Filter
+    if (buildingFilter !== 'all') {
+      const userBldgId = u.flat?.building?.id || u.flat?.building;
+      if (String(userBldgId) !== String(buildingFilter)) return false;
+    }
+
+    // Search Query
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase();
+      const matchName = `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase().includes(q);
+      const matchUser = (u.username || '').toLowerCase().includes(q);
+      const matchEmail = (u.email || '').toLowerCase().includes(q);
+      const matchFlat = String(u.flat?.number || u.flat || '').toLowerCase().includes(q);
+      const matchBldg = (u.flat?.building?.name || '').toLowerCase().includes(q);
+      const matchPhone = (u.phone || '').toLowerCase().includes(q);
+      return matchName || matchUser || matchEmail || matchFlat || matchBldg || matchPhone;
+    }
+
+    return true;
+  });
 
   const handleSaveEdit = async () => {
     if (!editUser) return;
@@ -134,7 +173,7 @@ const AdminUserPanel = () => {
                 <Text>🔄</Text>
               </TouchableOpacity>
             </View>
-            <View className="border border-slate-200 rounded-xl px-3 py-2 flex-row items-center bg-slate-50">
+            <View className="border border-slate-200 rounded-xl px-3 py-2 flex-row items-center bg-slate-50 mb-3">
               <Text className="text-slate-400 mr-2">🔍</Text>
               <TextInput
                 placeholder="Search users by name, username, email..."
@@ -144,6 +183,40 @@ const AdminUserPanel = () => {
                 className="flex-1 text-slate-900"
                 style={{ fontSize: 13 }}
               />
+            </View>
+
+            {/* Filter Dropdowns Row */}
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <View style={{ flex: 1 }}>
+                <CustomSelect
+                  label="Filter by Role"
+                  value={roleFilter}
+                  options={[
+                    { label: 'All Roles', value: 'all' },
+                    { label: 'Resident', value: 'resident' },
+                    { label: 'Building Admin', value: 'building_admin' },
+                    { label: 'Super Admin', value: 'super_admin' },
+                  ]}
+                  onValueChange={setRoleFilter}
+                  icon="person-outline"
+                  containerStyle={{ marginVertical: 0 }}
+                />
+              </View>
+              {buildings.length > 0 && (
+                <View style={{ flex: 1 }}>
+                  <CustomSelect
+                    label="Filter by Building"
+                    value={buildingFilter}
+                    options={[
+                      { label: 'All Buildings', value: 'all' },
+                      ...buildings.map((b) => ({ label: b.name, value: String(b.id) })),
+                    ]}
+                    onValueChange={setBuildingFilter}
+                    icon="business-outline"
+                    containerStyle={{ marginVertical: 0 }}
+                  />
+                </View>
+              )}
             </View>
           </View>
 
@@ -212,22 +285,29 @@ const AdminUserPanel = () => {
                 <Text className="text-slate-400 font-bold text-lg">✕</Text>
               </TouchableOpacity>
             </View>
-            <Text className="text-xs font-bold text-slate-700 mb-1">Role</Text>
-            <View className="border border-slate-300 rounded-xl bg-slate-50 overflow-hidden mb-3" style={{ height: 48 }}>
-              <Picker selectedValue={editRole} onValueChange={setEditRole} style={{ height: 48 }}>
-                <Picker.Item label="Resident" value="resident" />
-                <Picker.Item label="Admin" value="admin" />
-              </Picker>
-            </View>
-            <Text className="text-xs font-bold text-slate-700 mb-1">Flat Assignment</Text>
-            <View className="border border-slate-300 rounded-xl bg-slate-50 overflow-hidden mb-4" style={{ height: 48 }}>
-              <Picker selectedValue={editFlatId} onValueChange={(v) => setEditFlatId(v)} style={{ height: 48 }}>
-                <Picker.Item label="— No flat (Super Admin) —" value="" />
-                {flats.map((f) => (
-                  <Picker.Item key={f.id} label={`${f.building?.name || ''} - ${f.number}`} value={f.id} />
-                ))}
-              </Picker>
-            </View>
+            <CustomSelect
+              label="Role"
+              value={editRole}
+              options={[
+                { label: 'Resident', value: 'resident' },
+                { label: 'Admin', value: 'admin' },
+              ]}
+              onValueChange={setEditRole}
+              icon="person-outline"
+            />
+            <CustomSelect
+              label="Flat Assignment"
+              value={editFlatId}
+              options={[
+                { label: '— No flat (Super Admin) —', value: '' },
+                ...flats.map((f) => ({
+                  label: `${f.building?.name || ''} - Flat ${f.number}`,
+                  value: f.id,
+                })),
+              ]}
+              onValueChange={(v) => setEditFlatId(v)}
+              icon="home-outline"
+            />
             <View className="flex-row gap-2">
               <TouchableOpacity onPress={() => setEditUser(null)} className="flex-1 py-3 rounded-xl items-center border border-slate-200 bg-slate-100">
                 <Text className="text-slate-600 font-semibold">Cancel</Text>

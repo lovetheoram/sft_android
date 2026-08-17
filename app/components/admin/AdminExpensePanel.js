@@ -9,7 +9,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   ActivityIndicator, Modal, Alert, FlatList,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import CustomSelect from '../common/CustomSelect';
 import * as ImagePicker from 'expo-image-picker';
 import financeService from '../../user_utils/services/financeService';
 import buildingService from '../../user_utils/services/buildingService';
@@ -143,16 +143,17 @@ const AdminExpensePanel = () => {
 
             {/* Category filter */}
             <View className="flex-row items-center gap-2">
-              <View className="flex-1 border border-slate-200 rounded-xl bg-slate-50 overflow-hidden" style={{ height: 40 }}>
-                <Picker
-                  selectedValue={categoryFilter}
+              <View className="flex-1">
+                <CustomSelect
+                  value={categoryFilter}
+                  options={[
+                    { label: 'All Categories', value: '' },
+                    ...categories.map((c) => ({ label: c.name, value: c.id })),
+                  ]}
                   onValueChange={(v) => { setCategoryFilter(v); fetchExpenses(1, v); }}
-                  style={{ height: 40 }}>
-                  <Picker.Item label="All Categories" value="" />
-                  {categories.map((c) => (
-                    <Picker.Item key={c.id} label={c.name} value={c.id} />
-                  ))}
-                </Picker>
+                  icon="funnel-outline"
+                  containerStyle={{ marginVertical: 0 }}
+                />
               </View>
               <TouchableOpacity onPress={() => fetchExpenses(currentPage)} className="p-2.5 border border-slate-200 rounded-xl bg-slate-50">
                 <Text>🔄</Text>
@@ -251,17 +252,14 @@ const AdminExpensePanel = () => {
               placeholder="2026-01-01" placeholderTextColor="#94a3b8" style={{ fontSize: 14 }} />
 
             {categories.length > 0 && (
-              <>
-                <Text className="text-xs font-bold text-slate-700 mb-1">Category</Text>
-                <View className="border border-slate-300 rounded-xl bg-slate-50 overflow-hidden mb-3" style={{ height: 48 }}>
-                  <Picker selectedValue={formCategory} onValueChange={setFormCategory} style={{ height: 48 }}>
-                    <Picker.Item label="— Select Category —" value="" />
-                    {categories.map((c) => (
-                      <Picker.Item key={c.id} label={c.name} value={c.id} />
-                    ))}
-                  </Picker>
-                </View>
-              </>
+              <CustomSelect
+                label="Category"
+                value={formCategory}
+                options={categories.map((c) => ({ label: c.name, value: c.id }))}
+                onValueChange={setFormCategory}
+                placeholder="— Select Category —"
+                icon="pricetag-outline"
+              />
             )}
 
             <Text className="text-xs font-bold text-slate-700 mb-1">Description</Text>

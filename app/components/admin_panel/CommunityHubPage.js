@@ -76,7 +76,7 @@ const ComplaintViewUser = () => (
     <Text style={{ fontSize: 40 }}>📬</Text>
     <Text className="text-slate-700 font-bold text-base mt-3">Complaint Tickets</Text>
     <Text className="text-slate-400 text-sm mt-1 text-center">
-      Use the "File Complaint" button in Notifications to submit a ticket.
+      {"Use the \"File Complaint\" button in Notifications to submit a ticket."}
     </Text>
   </View>
 );

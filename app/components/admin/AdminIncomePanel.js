@@ -12,8 +12,8 @@ import {
   ActivityIndicator, Modal, Alert, FlatList, RefreshControl,
   KeyboardAvoidingView, Platform, Pressable,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import CustomSelect from '../common/CustomSelect';
 import financeService from '../../user_utils/services/financeService';
 import ConfirmModal from '../common/ConfirmModal';
 
@@ -178,18 +178,19 @@ const AdminIncomePanel = () => {
 
             {/* Status filter row */}
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-              <View style={{ flex: 1, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, backgroundColor: '#f8fafc', overflow: 'hidden', height: 42 }}>
-                <Picker
-                  selectedValue={statusFilter}
+              <View style={{ flex: 1 }}>
+                <CustomSelect
+                  value={statusFilter}
+                  options={[
+                    { label: 'All Payments', value: 'all' },
+                    { label: '◷ Pending (default)', value: 'pending' },
+                    { label: '✓ Verified', value: 'verified' },
+                    { label: '✕ Rejected', value: 'fraud' },
+                  ]}
                   onValueChange={(v) => { setStatusFilter(v); fetchIncomes(1, v); }}
-                  style={{ height: 42, color: '#0f172a' }}
-                  dropdownIconColor="#94a3b8"
-                >
-                  <Picker.Item label="All Payments" value="all" />
-                  <Picker.Item label="◷ Pending (default)" value="pending" />
-                  <Picker.Item label="✓ Verified" value="verified" />
-                  <Picker.Item label="✕ Rejected" value="fraud" />
-                </Picker>
+                  icon="funnel-outline"
+                  containerStyle={{ marginVertical: 0 }}
+                />
               </View>
               <TouchableOpacity
                 onPress={() => setShowFilters(!showFilters)}

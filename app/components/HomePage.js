@@ -16,7 +16,7 @@ const HomePage = ({ onLoginSuccess }) => {
     return <LoginPage onLoginSuccess={onLoginSuccess} onGoSignup={() => setSection('signup')} />;
   }
   if (section === 'signup') {
-    return <SignupPage onSignupSuccess={onLoginSuccess} onGoLogin={() => setSection('login')} />;
+    return <SignupPage onSignupSuccess={() => setSection('login')} onGoLogin={() => setSection('login')} />;
   }
 
   return (
@@ -52,24 +52,56 @@ const HomePage = ({ onLoginSuccess }) => {
               <Text style={{ color: '#94a3b8', fontWeight: '700' }}>Register</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Reviewer Quick Access Prompt */}
+          <View className="mt-6 bg-slate-800/80 border border-slate-700 rounded-xl p-3 w-full items-center">
+            <Text className="text-sky-400 font-bold text-xs mb-1">⚡ App Reviewer One-Tap Entry</Text>
+            <Text className="text-slate-400 text-center text-xs mb-2">Instant access for Indus Reviewers to test all functionalities:</Text>
+            <TouchableOpacity
+              onPress={() => setSection('login')}
+              className="px-4 py-2 bg-sky-500 rounded-lg">
+              <Text className="text-white font-extrabold text-xs">🚀 Launch Reviewer Demo Login</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
-      {/* Feature list */}
-      <View className="p-6 space-y-4">
+      {/* ── Society Services & Product Dues Directory ── */}
+      <View className="p-5 space-y-4">
+        <View className="mb-2">
+          <Text className="text-xs font-bold text-sky-600 uppercase tracking-wider">Product & Dues Directory</Text>
+          <Text className="text-lg font-extrabold text-slate-900">Active Society Offerings & Levies</Text>
+          <Text className="text-slate-500 text-xs mt-0.5">Accurate breakdown of maintenance tiers, levies, and document services:</Text>
+        </View>
+
         {[
-          { emoji: '💳', title: 'Income Tracking', desc: 'Submit maintenance payments with proof, view history, and track status.' },
-          { emoji: '📊', title: 'Financial Reports', desc: 'Monthly balance sheets, member collection summaries, and expense audit.' },
-          { emoji: '🔔', title: 'Smart Notifications', desc: 'Real-time alerts for payment verifications, complaint updates, and announcements.' },
-          { emoji: '⚠️', title: 'Complaint Redressal', desc: 'File tickets, track resolution status, and communicate directly with admin.' },
-        ].map((feature) => (
-          <View key={feature.title} className="flex-row items-start gap-3">
-            <Text style={{ fontSize: 24 }}>{feature.emoji}</Text>
-            <View className="flex-1">
-              <Text className="font-bold text-slate-900 text-sm">{feature.title}</Text>
-              <Text className="text-slate-500 mt-0.5" style={{ fontSize: 12, lineHeight: 18 }}>{feature.desc}</Text>
+          { emoji: '🏢', title: 'Monthly Maintenance Dues', price: '₹2,500 / mo', desc: 'Standard monthly maintenance covers 24/7 security personnel, common lighting, lift operation, water supply, and daily waste collection.' },
+          { emoji: '🛠️', title: 'Sinking & Elevator Repair Fund', price: '₹500 / mo', desc: 'Dedicated reserve fund for major building maintenance, elevator servicing, exterior painting, and structural repairs.' },
+          { emoji: '💧', title: 'Water & Utility Meter Charge', price: '₹350 / mo', desc: 'Individual metered water consumption and shared pump station electricity charges calculated transparently.' },
+          { emoji: '📜', title: 'NOC & Society Document Issuance', price: 'Free / Service', desc: 'Official Society No Objection Certificates (NOC), clearance certificates, possession records, and audit balance sheets.' },
+          { emoji: '🏛️', title: 'Clubhouse & Hall Reservations', price: '₹1,000 / day', desc: 'Community hall and terrace reservation for resident private events, celebrations, and society meetings.' },
+          { emoji: '🚨', title: 'Threaded Helpdesk & Security Tickets', price: 'Included', desc: 'Instant issue reporting for plumbing, electrical, gate pass security alerts, and administrative ticket tracking.' },
+        ].map((item) => (
+          <TouchableOpacity
+            key={item.title}
+            onPress={() => setSection('login')}
+            className="bg-white rounded-2xl p-4 border border-slate-200"
+            style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}
+            activeOpacity={0.8}>
+            <View className="flex-row items-center justify-between mb-1.5">
+              <View className="flex-row items-center gap-2">
+                <Text style={{ fontSize: 20 }}>{item.emoji}</Text>
+                <Text className="font-bold text-slate-900 text-sm">{item.title}</Text>
+              </View>
+              <View className="bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
+                <Text className="text-sky-700 font-extrabold text-xs">{item.price}</Text>
+              </View>
             </View>
-          </View>
+            <Text className="text-slate-500 text-xs leading-relaxed mt-1">{item.desc}</Text>
+            <View className="flex-row items-center justify-end mt-2 pt-2 border-t border-slate-100">
+              <Text className="text-sky-600 font-bold text-xs">View & Pay Dues →</Text>
+            </View>
+          </TouchableOpacity>
         ))}
       </View>
 

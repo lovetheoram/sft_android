@@ -205,59 +205,101 @@ const UserHomePage = ({ onNavigate }) => {
 
         {/* ── Feature Cards ── */}
         <View className="gap-3">
-          {/* Card 1: Income */}
-          <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
-            style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
-            <View className="w-10 h-10 rounded-xl items-center justify-center border border-emerald-200"
-              style={{ backgroundColor: '#ecfdf5' }}>
-              <Text style={{ fontSize: 18 }}>💳</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-slate-900">Income & Cash Auditing</Text>
-              <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
-                Record maintenance payments online with proof, or pay cash directly to admin.
-              </Text>
-              <TouchableOpacity onPress={() => onNavigate?.('income')} className="mt-2">
-                <Text style={{ color: '#059669', fontSize: 12, fontWeight: '700' }}>Go to Income Ledger →</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          {isSuperAdmin ? (
+            <>
+              {/* Super Admin Card 1: System Admin Dashboard */}
+              <View className="bg-white rounded-2xl p-4 border border-amber-200 flex-row items-start gap-3"
+                style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
+                <View className="w-10 h-10 rounded-xl items-center justify-center border border-amber-200"
+                  style={{ backgroundColor: '#fffbeb' }}>
+                  <Text style={{ fontSize: 18 }}>⚙️</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-slate-900">Unified Admin Dashboard</Text>
+                  <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
+                    Global multi-building management: users, property units, categories, and audit permissions.
+                  </Text>
+                  <TouchableOpacity onPress={() => onNavigate?.('admin-dashboard')} className="mt-2">
+                    <Text style={{ color: '#d97706', fontSize: 12, fontWeight: '700' }}>Open Admin Panel →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
 
-          {/* Card 2: Financial Reports */}
-          <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
-            style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
-            <View className="w-10 h-10 rounded-xl items-center justify-center border border-sky-200"
-              style={{ backgroundColor: '#f0f9ff' }}>
-              <Text style={{ fontSize: 18 }}>📊</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-slate-900">Financial Reports</Text>
-              <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
-                Complete transparency into monthly balances, member collections, and expenses.
-              </Text>
-              <TouchableOpacity onPress={() => onNavigate?.('dashboard')} className="mt-2">
-                <Text style={{ color: '#0284c7', fontSize: 12, fontWeight: '700' }}>View Balance Sheet →</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              {/* Super Admin Card 2: Community Broadcasts */}
+              <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
+                style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
+                <View className="w-10 h-10 rounded-xl items-center justify-center border border-sky-200"
+                  style={{ backgroundColor: '#f0f9ff' }}>
+                  <Text style={{ fontSize: 18 }}>📢</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-slate-900">Community Hub & Broadcasts</Text>
+                  <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
+                    Issue global society notices, monitor resident tickets, and review system alerts.
+                  </Text>
+                  <TouchableOpacity onPress={() => onNavigate?.('community')} className="mt-2">
+                    <Text style={{ color: '#0284c7', fontSize: 12, fontWeight: '700' }}>View Community Hub →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </>
+          ) : (
+            <>
+              {/* Card 1: Income */}
+              <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
+                style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
+                <View className="w-10 h-10 rounded-xl items-center justify-center border border-emerald-200"
+                  style={{ backgroundColor: '#ecfdf5' }}>
+                  <Text style={{ fontSize: 18 }}>💳</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-slate-900">Income & Cash Auditing</Text>
+                  <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
+                    Record maintenance payments online with proof, or pay cash directly to admin.
+                  </Text>
+                  <TouchableOpacity onPress={() => onNavigate?.('income')} className="mt-2">
+                    <Text style={{ color: '#059669', fontSize: 12, fontWeight: '700' }}>Go to Income Ledger →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
 
-          {/* Card 3: Complaints */}
-          <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
-            style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
-            <View className="w-10 h-10 rounded-xl items-center justify-center border border-amber-200"
-              style={{ backgroundColor: '#fffbeb' }}>
-              <Text style={{ fontSize: 18 }}>⚠️</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-slate-900">Complaint Redressal</Text>
-              <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
-                Direct ticket logging for plumbing, electrical, or security issues to your admin.
-              </Text>
-              <TouchableOpacity onPress={() => onNavigate?.('community')} className="mt-2">
-                <Text style={{ color: '#d97706', fontSize: 12, fontWeight: '700' }}>File a Complaint →</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              {/* Card 2: Financial Reports */}
+              <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
+                style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
+                <View className="w-10 h-10 rounded-xl items-center justify-center border border-sky-200"
+                  style={{ backgroundColor: '#f0f9ff' }}>
+                  <Text style={{ fontSize: 18 }}>📊</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-slate-900">Financial Reports</Text>
+                  <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
+                    Complete transparency into monthly balances, member collections, and expenses.
+                  </Text>
+                  <TouchableOpacity onPress={() => onNavigate?.('dashboard')} className="mt-2">
+                    <Text style={{ color: '#0284c7', fontSize: 12, fontWeight: '700' }}>View Balance Sheet →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Card 3: Complaints */}
+              <View className="bg-white rounded-2xl p-4 border border-slate-200 flex-row items-start gap-3"
+                style={{ shadowColor: '#000', shadowOpacity: 0.04, elevation: 2 }}>
+                <View className="w-10 h-10 rounded-xl items-center justify-center border border-amber-200"
+                  style={{ backgroundColor: '#fffbeb' }}>
+                  <Text style={{ fontSize: 18 }}>⚠️</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-slate-900">Complaint Redressal</Text>
+                  <Text className="text-slate-500 mt-1" style={{ fontSize: 12, lineHeight: 18 }}>
+                    Direct ticket logging for plumbing, electrical, or security issues to your admin.
+                  </Text>
+                  <TouchableOpacity onPress={() => onNavigate?.('community')} className="mt-2">
+                    <Text style={{ color: '#d97706', fontSize: 12, fontWeight: '700' }}>File a Complaint →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </>
+          )}
         </View>
 
         <View className="h-4" />

@@ -9,7 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import axios from 'axios';
-import { API_BASE_URL } from '@/app/user_utils/api';
+import { API_BASE_URL } from '../../user_utils/api';
 
 const SpecialChargeManager = ({ authHeader }) => {
   const [charges, setCharges] = useState([]);

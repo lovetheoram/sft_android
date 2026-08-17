@@ -1,23 +1,24 @@
 {
   "expo": {
-    "name": "my-android",
-    "slug": "my-android",
+    "name": "Society Finance Tracker",
+    "slug": "society-finance-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myandroid",
+    "scheme": "societyfinancetracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.sanjeevpratap99209920.myandroid"
+      "package": "com.sanjeevpratap99209920.societyfinancetracker"
     },
     "web": {
       "bundler": "metro",
@@ -45,7 +46,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "1036d91b-871e-4975-bdcf-b2779525f4c8"
+        "projectId": "b76390e2-f717-4868-a283-09309fdc0891"
       }
     }
   }

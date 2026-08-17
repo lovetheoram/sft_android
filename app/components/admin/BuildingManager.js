@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import axios from "axios";
-import { API_BASE_URL } from "@/app/user_utils/api";
+import { API_BASE_URL } from "../../user_utils/api";
 const BuildingManager = ({ authHeader }) => {
   const [buildings, setBuildings] = useState([]);
   const [name, setName] = useState("");
