@@ -10,3 +10,7 @@ export const getAuthHeader = async () => {
     },
   };
 };
+
+export default function AuthHeaderRouteGuard() {
+  return null;
+}

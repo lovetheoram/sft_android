@@ -8,11 +8,10 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
-  Picker
 } from 'react-native';
-import { Picker as RNPicker } from '@react-native-picker/picker';
+import CustomSelect from '../common/CustomSelect';
 import axios from 'axios';
-import { API_BASE_URL } from '@/app/user_utils/api';
+import { API_BASE_URL } from '../../user_utils/api';
 const FlatManager = ({ authHeader }) => {
   const [flats, setFlats] = useState([]);
   const [newFlatNumber, setNewFlatNumber] = useState('');
@@ -103,19 +102,14 @@ const FlatManager = ({ authHeader }) => {
       <Text className="text-xl font-bold mb-4">🏠 Manage Flats</Text>
 
       {isSuperAdmin ? (
-        <View className="mb-4">
-          <Text className="text-base font-medium mb-1">Select Building</Text>
-          <RNPicker
-            selectedValue={selectedBuildingId}
-            onValueChange={(value) => setSelectedBuildingId(value)}
-            className="border border-gray-300 rounded"
-          >
-            <RNPicker.Item label="-- Select --" value="" />
-            {buildings.map((b) => (
-              <RNPicker.Item key={b.id} label={b.name} value={b.id} />
-            ))}
-          </RNPicker>
-        </View>
+        <CustomSelect
+          label="Select Building"
+          value={selectedBuildingId}
+          options={buildings.map((b) => ({ label: b.name, value: b.id }))}
+          onValueChange={(val) => setSelectedBuildingId(val)}
+          placeholder="-- Select Building --"
+          icon="business-outline"
+        />
       ) : (
         <Text className="text-base text-gray-600 mb-3">Managing flats for <Text className="font-bold">{buildings[0]?.name}</Text></Text>
       )}

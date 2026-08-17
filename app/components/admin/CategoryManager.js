@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import axios from "axios";
-import { API_BASE_URL } from "@/app/user_utils/api";
+import { API_BASE_URL } from "../../user_utils/api";
 const CategoryManager = ({ authHeader }) => {
   const [categories, setCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState("");

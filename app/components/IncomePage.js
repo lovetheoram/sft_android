@@ -10,7 +10,7 @@ import {
   ActivityIndicator, Alert, Pressable,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Picker } from '@react-native-picker/picker';
+import CustomSelect from './common/CustomSelect';
 import financeService from '../user_utils/services/financeService';
 import buildingService from '../user_utils/services/buildingService';
 
@@ -207,20 +207,20 @@ const IncomePage = () => {
               </View>
 
               {specialCharges.length > 0 && (
-                <View>
-                  <Text className="text-xs font-bold text-slate-700 mb-1">Special Charge (optional)</Text>
-                  <View className="border border-slate-300 rounded-xl bg-slate-50 overflow-hidden">
-                    <Picker
-                      selectedValue={specialChargeId}
-                      onValueChange={(v) => setSpecialChargeId(v)}
-                      style={{ height: 48 }}>
-                      <Picker.Item label="— None (Regular Maintenance) —" value="" />
-                      {specialCharges.map((sc) => (
-                        <Picker.Item key={sc.id} label={`${sc.title} (₹${sc.amount_expected})`} value={sc.id} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
+                <CustomSelect
+                  label="Special Charge (optional)"
+                  value={specialChargeId}
+                  options={[
+                    { label: '— None (Regular Maintenance) —', value: '' },
+                    ...specialCharges.map((sc) => ({
+                      label: `${sc.title} (₹${sc.amount_expected})`,
+                      value: sc.id,
+                    })),
+                  ]}
+                  onValueChange={(v) => setSpecialChargeId(v)}
+                  placeholder="Select special charge..."
+                  icon="cash-outline"
+                />
               )}
 
               <TouchableOpacity
@@ -255,19 +255,21 @@ const IncomePage = () => {
         <View className="flex-1">
           {/* Filter bar */}
           <View className="bg-white border-b border-slate-100 px-4 py-2 flex-row items-center gap-2">
-            <Text className="text-xs font-bold text-slate-600">Filter:</Text>
-            <View className="flex-1 border border-slate-200 rounded-xl overflow-hidden bg-slate-50" style={{ height: 36 }}>
-              <Picker
-                selectedValue={statusFilter}
+            <View style={{ flex: 1 }}>
+              <CustomSelect
+                value={statusFilter}
+                options={[
+                  { label: 'All Payments', value: 'all' },
+                  { label: '✓ Verified', value: 'verified' },
+                  { label: '◷ Pending', value: 'pending' },
+                  { label: '✕ Rejected', value: 'fraud' },
+                ]}
                 onValueChange={(v) => { setStatusFilter(v); fetchHistory(true); }}
-                style={{ height: 36 }}>
-                <Picker.Item label="All Payments" value="all" />
-                <Picker.Item label="✓ Verified" value="verified" />
-                <Picker.Item label="◷ Pending" value="pending" />
-                <Picker.Item label="✕ Rejected" value="fraud" />
-              </Picker>
+                icon="funnel-outline"
+                containerStyle={{ marginVertical: 0 }}
+              />
             </View>
-            <TouchableOpacity onPress={() => fetchHistory(true)} className="p-2">
+            <TouchableOpacity onPress={() => fetchHistory(true)} className="p-2 bg-slate-100 rounded-xl">
               <Text style={{ fontSize: 16 }}>🔄</Text>
             </TouchableOpacity>
           </View>

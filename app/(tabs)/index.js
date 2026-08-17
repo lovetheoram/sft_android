@@ -110,21 +110,17 @@ export default function RootIndex() {
     fetchUnread();
   }, [isAuthenticated]);
 
-  // Auth redirect
+  // Auth redirect & default tab by role
   useEffect(() => {
     if (!isAuthenticated && activeTab !== 'home') setActiveTab('home');
-    if (isAuthenticated && activeTab === 'home') setActiveTab('user-home');
-  }, [isAuthenticated]);
-
-  // Avatar menu animation
-  useEffect(() => {
-    Animated.timing(menuAnim, {
-      toValue: userMenuOpen ? 1 : 0,
-      duration: 200,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [userMenuOpen]);
+    if (isAuthenticated && activeTab === 'home') {
+      if (isSuperAdmin) {
+        setActiveTab('admin-dashboard');
+      } else {
+        setActiveTab('user-home');
+      }
+    }
+  }, [isAuthenticated, isSuperAdmin, activeTab]);
 
   const handleTabPress = (tabId) => {
     if (tabId === activeTab) return;
@@ -133,14 +129,41 @@ export default function RootIndex() {
     setActiveTab(tabId);
   };
 
-  const tabs = !isAuthenticated ? [] : [
-    { id: 'user-home', label: 'Home', icon: 'home-outline', iconActive: 'home' },
-    { id: 'dashboard', label: 'Finance', icon: 'bar-chart-outline', iconActive: 'bar-chart' },
-    { id: 'income', label: 'Payments', icon: 'card-outline', iconActive: 'card' },
-    { id: 'expenses', label: 'Expenses', icon: 'receipt-outline', iconActive: 'receipt' },
-    ...(isSuperAdmin || isBuildingAdmin ? [{ id: 'admin-dashboard', label: 'Admin', icon: 'settings-outline', iconActive: 'settings' }] : []),
-    { id: 'profile', label: 'Profile', icon: 'person-outline', iconActive: 'person' },
-  ];
+  // ─── Build Navigation Tabs Strictly By Role (Web Parity) ──────────────
+  const buildTabs = () => {
+    if (!isAuthenticated) return [];
+
+    // Super Admin: Strictly Home, Admin Panel, Profile (No building-level finance/income/expense)
+    if (isSuperAdmin) {
+      return [
+        { id: 'user-home', label: 'Home', icon: 'home-outline', iconActive: 'home' },
+        { id: 'admin-dashboard', label: 'Admin', icon: 'settings-outline', iconActive: 'settings' },
+        { id: 'profile', label: 'Profile', icon: 'person-outline', iconActive: 'person' },
+      ];
+    }
+
+    // Building Admin: Home, Finance, Payments, Expenses, Admin, Profile
+    if (isBuildingAdmin) {
+      return [
+        { id: 'user-home', label: 'Home', icon: 'home-outline', iconActive: 'home' },
+        { id: 'dashboard', label: 'Finance', icon: 'bar-chart-outline', iconActive: 'bar-chart' },
+        { id: 'income', label: 'Payments', icon: 'card-outline', iconActive: 'card' },
+        { id: 'expenses', label: 'Expenses', icon: 'receipt-outline', iconActive: 'receipt' },
+        { id: 'admin-dashboard', label: 'Admin', icon: 'settings-outline', iconActive: 'settings' },
+        { id: 'profile', label: 'Profile', icon: 'person-outline', iconActive: 'person' },
+      ];
+    }
+
+    // Resident: Home, Finance, Payments, Profile
+    return [
+      { id: 'user-home', label: 'Home', icon: 'home-outline', iconActive: 'home' },
+      { id: 'dashboard', label: 'Finance', icon: 'bar-chart-outline', iconActive: 'bar-chart' },
+      { id: 'income', label: 'Payments', icon: 'card-outline', iconActive: 'card' },
+      { id: 'profile', label: 'Profile', icon: 'person-outline', iconActive: 'person' },
+    ];
+  };
+
+  const tabs = buildTabs();
 
   const renderContent = () => {
     if (!isAuthenticated) {
@@ -391,30 +414,39 @@ export default function RootIndex() {
                 <Ionicons name="home-outline" size={16} color="#0284c7" />
                 <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Home</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => { setUserMenuOpen(false); handleTabPress('dashboard'); }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="bar-chart-outline" size={16} color="#0284c7" />
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Finance Reports</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => { setUserMenuOpen(false); handleTabPress('income'); }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="card-outline" size={16} color="#0284c7" />
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Payments Ledger</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => { setUserMenuOpen(false); handleTabPress('expenses'); }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="receipt-outline" size={16} color="#0284c7" />
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Expense Log</Text>
-              </TouchableOpacity>
+
+              {!isSuperAdmin && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => { setUserMenuOpen(false); handleTabPress('dashboard'); }}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="bar-chart-outline" size={16} color="#0284c7" />
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Finance Reports</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => { setUserMenuOpen(false); handleTabPress('income'); }}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="card-outline" size={16} color="#0284c7" />
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Payments Ledger</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {isBuildingAdmin && (
+                <TouchableOpacity
+                  onPress={() => { setUserMenuOpen(false); handleTabPress('expenses'); }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="receipt-outline" size={16} color="#0284c7" />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e293b' }}>Expense Log</Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 onPress={() => { setUserMenuOpen(false); handleTabPress('notifications'); }}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 }}

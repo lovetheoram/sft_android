@@ -114,10 +114,83 @@ const LoginPage = ({ onLoginSuccess, onGoSignup }) => {
           {/* Signup link */}
           <TouchableOpacity onPress={onGoSignup} className="mt-4 items-center">
             <Text className="text-sm text-slate-500">
-              Don't have an account?{' '}
+              {"Don't have an account?"}{' '}
               <Text style={{ color: '#0284c7', fontWeight: '700' }}>Sign up</Text>
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* ── App Store Reviewer Quick Access ── */}
+        <View className="mt-6 bg-sky-50 border border-sky-200 rounded-2xl p-4">
+          <Text className="text-xs font-extrabold text-sky-900 text-center mb-1">
+            ⚡ App Store Reviewer One-Tap Access
+          </Text>
+          <Text className="text-slate-500 text-center mb-3" style={{ fontSize: 11 }}>
+            Tap a demo role below to sign in instantly with seeded demo accounts:
+          </Text>
+          <View className="flex-col gap-2">
+            <TouchableOpacity
+              onPress={async () => {
+                setUsername('demoAdmin');
+                setPassword('demo12345');
+                setError('');
+                setLoading(true);
+                try {
+                  await login({ username: 'demoAdmin', password: 'demo12345' });
+                  onLoginSuccess?.();
+                } catch {
+                  setError('Demo admin login failed. Please check backend connection.');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              className="py-2.5 bg-amber-600 rounded-xl items-center flex-row justify-center gap-1.5"
+              activeOpacity={0.8}>
+              <Text className="text-white font-bold text-xs">👑 Super Admin (demoAdmin)</Text>
+            </TouchableOpacity>
+
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={async () => {
+                  setUsername('demoBuildingAdmin');
+                  setPassword('demo12345');
+                  setError('');
+                  setLoading(true);
+                  try {
+                    await login({ username: 'demoBuildingAdmin', password: 'demo12345' });
+                    onLoginSuccess?.();
+                  } catch {
+                    setError('Demo building admin login failed. Please check backend connection.');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="flex-1 py-2.5 bg-sky-600 rounded-xl items-center"
+                activeOpacity={0.8}>
+                <Text className="text-white font-bold text-xs">🏢 Building Admin</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  setUsername('demoResident');
+                  setPassword('demo12345');
+                  setError('');
+                  setLoading(true);
+                  try {
+                    await login({ username: 'demoResident', password: 'demo12345' });
+                    onLoginSuccess?.();
+                  } catch {
+                    setError('Demo resident login failed. Please check backend connection.');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="flex-1 py-2.5 bg-emerald-600 rounded-xl items-center"
+                activeOpacity={0.8}>
+                <Text className="text-white font-bold text-xs">🏠 Resident</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         <Text className="text-center text-slate-400 mt-6" style={{ fontSize: 11 }}>

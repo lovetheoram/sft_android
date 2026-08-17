@@ -9,7 +9,7 @@ import {
   Modal, ActivityIndicator, FlatList, Alert, Pressable,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import CustomSelect from '../common/CustomSelect';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../user_utils/AuthContext';
 import buildingService from '../../user_utils/services/buildingService';
@@ -318,14 +318,13 @@ const FlatsPanel = () => {
       <FormModal visible={showForm} title={editItem ? 'Edit Flat' : 'Add Flat'} onClose={() => setShowForm(false)} onSave={save} saving={saving}>
         <FormInput label="Flat Number *" value={formNumber} onChangeText={setFormNumber} placeholder="e.g. 101, A-2" />
         {buildings.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 5 }}>Building *</Text>
-            <View style={{ borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, backgroundColor: '#fff', overflow: 'hidden' }}>
-              <Picker selectedValue={formBuilding} onValueChange={setFormBuilding} style={{ height: 48, color: '#0f172a' }}>
-                {buildings.map((b) => <Picker.Item key={b.id} label={b.name} value={String(b.id)} />)}
-              </Picker>
-            </View>
-          </View>
+          <CustomSelect
+            label="Building *"
+            value={formBuilding}
+            options={buildings.map((b) => ({ label: b.name, value: String(b.id) }))}
+            onValueChange={setFormBuilding}
+            icon="business-outline"
+          />
         )}
         <TouchableOpacity
           onPress={() => setFormOccupied(!formOccupied)}
@@ -422,14 +421,13 @@ const CategoriesPanel = () => {
       <FormModal visible={showForm} title={editItem ? 'Edit Category' : 'Add Category'} onClose={() => setShowForm(false)} onSave={save} saving={saving}>
         <FormInput label="Category Name *" value={formName} onChangeText={setFormName} placeholder="e.g. Electricity, Water" />
         {buildings.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 5 }}>Building *</Text>
-            <View style={{ borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, backgroundColor: '#fff', overflow: 'hidden' }}>
-              <Picker selectedValue={formBuilding} onValueChange={setFormBuilding} style={{ height: 48, color: '#0f172a' }}>
-                {buildings.map((b) => <Picker.Item key={b.id} label={b.name} value={String(b.id)} />)}
-              </Picker>
-            </View>
-          </View>
+          <CustomSelect
+            label="Building *"
+            value={formBuilding}
+            options={buildings.map((b) => ({ label: b.name, value: String(b.id) }))}
+            onValueChange={setFormBuilding}
+            icon="business-outline"
+          />
         )}
       </FormModal>
       <ConfirmModal visible={!!deleteTarget} title="Delete Category" message={`Delete "${deleteTarget?.name}"? This may affect existing expenses.`} confirmLabel="Delete" destructive onConfirm={deleteC} onCancel={() => setDeleteTarget(null)} />
@@ -531,14 +529,13 @@ const SpecialChargesPanel = () => {
         <FormInput label="Amount Expected (₹) *" value={formAmount} onChangeText={setFormAmount} keyboardType="numeric" />
         <FormInput label="Due Date (YYYY-MM-DD) *" value={formDueDate} onChangeText={setFormDueDate} />
         {buildings.length > 0 && (
-          <View style={{ marginBottom: 14 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#475569', marginBottom: 5 }}>Building *</Text>
-            <View style={{ borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, backgroundColor: '#fff', overflow: 'hidden' }}>
-              <Picker selectedValue={formBuilding} onValueChange={setFormBuilding} style={{ height: 48, color: '#0f172a' }}>
-                {buildings.map((b) => <Picker.Item key={b.id} label={b.name} value={String(b.id)} />)}
-              </Picker>
-            </View>
-          </View>
+          <CustomSelect
+            label="Building *"
+            value={formBuilding}
+            options={buildings.map((b) => ({ label: b.name, value: String(b.id) }))}
+            onValueChange={setFormBuilding}
+            icon="business-outline"
+          />
         )}
       </FormModal>
       <ConfirmModal visible={!!deleteTarget} title="Delete Special Charge" message={`Delete "${deleteTarget?.title}"?`} confirmLabel="Delete" destructive onConfirm={deleteSC} onCancel={() => setDeleteTarget(null)} />

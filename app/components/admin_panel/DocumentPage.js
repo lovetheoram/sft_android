@@ -13,7 +13,7 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import axios from "axios";
 // import { API_BASE_URL } from "../../api"; // Update path as needed
-import { API_BASE_URL } from "@/app/user_utils/api";
+import { API_BASE_URL } from "../../user_utils/api";
 const DocumentPage = ({ authHeader }) => {
   const [documents, setDocuments] = useState([]);
   const [title, setTitle] = useState("");
